@@ -29,6 +29,7 @@ html, body {
   width: 96vw;
   height: 96vh;
   transform-origin: center center;
+  transition: transform .15s ease;
 }
 
 #flipbook .page {
@@ -71,19 +72,19 @@ html, body {
   user-select: none;
   transition: background .2s ease, transform .1s ease, opacity .2s ease;
 }
-
 .nav:hover { background: rgba(0,0,0,.85); }
 .nav:active { transform: translateY(-50%) scale(0.95); }
 .nav.prev { left: 16px; }
 .nav.next { right: 16px; }
 .nav.disabled { opacity: .25; pointer-events: none; }
 
+/* ZOOM arriba centrado */
 .zoom-controls {
   position: fixed;
-  right: 20px;
-  bottom: 80px;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
-  flex-direction: column;
   gap: 10px;
   z-index: 30;
 }
@@ -93,7 +94,7 @@ html, body {
   height: 42px;
   border-radius: 50%;
   border: none;
-  background: rgba(0,0,0,.6);
+  background: rgba(0,0,0,.65);
   color: white;
   font-size: 22px;
   cursor: pointer;
@@ -136,7 +137,17 @@ html, body {
 <body>
 
 <div class="stage">
-  <div id="flipbook"></div>
+  <div id="flipbook">
+    <!-- PÁGINA FANTASMA (NO TOCAR) -->
+    <div class="page"></div>
+
+    <!-- 36 páginas reales -->
+    <script>
+      for (let i = 1; i <= 36; i++) {
+        document.write(`<div class="page"><img src="Imagenes/Boletin${i}.jpg"></div>`);
+      }
+    </script>
+  </div>
 </div>
 
 <button class="nav prev disabled">‹</button>
@@ -153,22 +164,16 @@ html, body {
 <audio id="flipSound" src="Audio/Sonido.mp3" preload="auto"></audio>
 
 <script>
-const totalPages = 36;
 const flipbook = $('#flipbook');
 
-// Crear páginas
-for (let i = 1; i <= totalPages; i++) {
-  flipbook.append(`<div class="page"><img src="Imagenes/Boletin${i}.jpg"></div>`);
-}
-
-// Inicializar Turn.js
 flipbook.turn({
   width: flipbook[0].clientWidth,
   height: flipbook[0].clientHeight,
   display: 'double',
   autoCenter: true,
   gradients: true,
-  elevation: 50
+  elevation: 50,
+  page: 2
 });
 
 // Flechas
@@ -177,13 +182,13 @@ const btnNext = document.querySelector('.nav.next');
 
 function updateArrows() {
   const page = flipbook.turn('page');
-  btnPrev.classList.toggle('disabled', page === 1);
+  btnPrev.classList.toggle('disabled', page <= 2);
 }
 
 btnNext.onclick = () => flipbook.turn('next');
 btnPrev.onclick = () => flipbook.turn('previous');
 
-flipbook.on('turned', function() {
+flipbook.on('turned', function () {
   updateArrows();
   const snd = document.getElementById('flipSound');
   snd.currentTime = 0;
@@ -200,25 +205,25 @@ function applyZoom() {
   document.getElementById('flipbook').style.transform = `scale(${zoom})`;
 }
 
-zoomIn.onclick = () => { zoom = Math.min(ZOOM_MAX, zoom + STEP); applyZoom(); }
-zoomOut.onclick = () => { zoom = Math.max(ZOOM_MIN, zoom - STEP); applyZoom(); }
+zoomIn.onclick = () => { zoom = Math.min(ZOOM_MAX, zoom + STEP); applyZoom(); };
+zoomOut.onclick = () => { zoom = Math.max(ZOOM_MIN, zoom - STEP); applyZoom(); };
 
 document.getElementById('flipbook').ondblclick = () => {
   zoom = zoom === 1 ? 2 : 1;
   applyZoom();
 };
 
-// Menú meses
+// Menú meses (sin octubre ni diciembre)
 const months = [
-  {name:'Febrero', page:1},
-  {name:'Marzo', page:5},
-  {name:'Abril', page:9},
-  {name:'Mayo', page:13},
-  {name:'Junio', page:17},
-  {name:'Julio', page:21},
-  {name:'Agosto', page:25},
-  {name:'Septiembre', page:29},
-  {name:'Noviembre', page:33},
+  {name:'Febrero', page:2},
+  {name:'Marzo', page:6},
+  {name:'Abril', page:10},
+  {name:'Mayo', page:14},
+  {name:'Junio', page:18},
+  {name:'Julio', page:22},
+  {name:'Agosto', page:26},
+  {name:'Septiembre', page:30},
+  {name:'Noviembre', page:34},
 ];
 
 const menu = document.getElementById('monthsMenu');
