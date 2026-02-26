@@ -113,6 +113,15 @@
       color: #fff;
       font-size: 18px;
     }
+    /* ===== Paneo al hacer zoom ===== */
+#flipbook {
+  cursor: grab;
+  transform-origin: center center;
+}
+
+#flipbook.panning {
+  cursor: grabbing;
+}
   </style>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
@@ -191,6 +200,57 @@
   const fb = $('#flipbook');
   const flipSound = document.getElementById('flipSound');
   let zoom = 1;
+  let isPanning = false;
+let startX = 0;
+let startY = 0;
+let panX = 0;
+let panY = 0;
+
+const flipbookEl = document.getElementById('flipbook');
+
+function applyTransform() {
+  flipbookEl.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+}
+
+// Reemplaza SOLO estas dos funciones de zoom (no borres nada más)
+document.getElementById('zoomIn').onclick = () => {
+  zoom += 0.1;
+  applyTransform();
+};
+
+document.getElementById('zoomOut').onclick = () => {
+  zoom = Math.max(1, zoom - 0.1);
+
+  if (zoom === 1) {
+    panX = 0;
+    panY = 0;
+  }
+
+  applyTransform();
+};
+
+// Eventos de paneo (arrastrar)
+flipbookEl.addEventListener('mousedown', (e) => {
+  if (zoom <= 1) return;
+
+  isPanning = true;
+  startX = e.clientX - panX;
+  startY = e.clientY - panY;
+  flipbookEl.classList.add('panning');
+});
+
+window.addEventListener('mousemove', (e) => {
+  if (!isPanning) return;
+
+  panX = e.clientX - startX;
+  panY = e.clientY - startY;
+  applyTransform();
+});
+
+window.addEventListener('mouseup', () => {
+  isPanning = false;
+  flipbookEl.classList.remove('panning');
+});
 
   fb.turn({
     width: fb.width(),
