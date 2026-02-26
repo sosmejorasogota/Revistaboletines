@@ -202,73 +202,77 @@
 <script>
   const fb = $('#flipbook');
   const flipSound = document.getElementById('flipSound');
+
   let zoom = 1;
+  let panX = 0;
+  let panY = 0;
+  let isPanning = false;
+  let startX = 0;
+  let startY = 0;
+
+  const flipbookEl = document.getElementById('flipbook');
+
   function clamp(value, min, max) {
-  return Math.min(Math.max(value, min), max);
-}
-
-function applyTransform(pageEl) {
-  const rect = pageEl.getBoundingClientRect();
-  const parentRect = pageEl.parentElement.getBoundingClientRect();
-
-  const scaledWidth = rect.width * scale;
-  const scaledHeight = rect.height * scale;
-
-  const maxX = Math.max(0, (scaledWidth - parentRect.width) / 2);
-  const maxY = Math.max(0, (scaledHeight - parentRect.height) / 2);
-
-  panX = clamp(panX, -maxX, maxX);
-  panY = clamp(panY, -maxY, maxY);
-
-  applyTransform(pageEl);
-}
-
-const flipbookEl = document.getElementById('flipbook');
-
-function applyTransform() {
-  flipbookEl.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
-}
-
-// Reemplaza SOLO estas dos funciones de zoom (no borres nada más)
-document.getElementById('zoomIn').onclick = () => {
-  zoom += 0.1;
-  applyTransform();
-};
-
-document.getElementById('zoomOut').onclick = () => {
-  zoom = Math.max(1, zoom - 0.1);
-
-  if (zoom === 1) {
-    panX = 0;
-    panY = 0;
+    return Math.min(Math.max(value, min), max);
   }
 
-  applyTransform();
-};
+  function applyTransform() {
+    const rect = flipbookEl.getBoundingClientRect();
+    const parentRect = flipbookEl.parentElement.getBoundingClientRect();
 
-// Eventos de paneo (arrastrar)
-flipbookEl.addEventListener('mousedown', (e) => {
-  if (zoom <= 1) return;
+    const scaledWidth = rect.width * zoom;
+    const scaledHeight = rect.height * zoom;
 
-  isPanning = true;
-  startX = e.clientX - panX;
-  startY = e.clientY - panY;
-  flipbookEl.classList.add('panning');
-});
+    const maxX = Math.max(0, (scaledWidth - parentRect.width) / 2);
+    const maxY = Math.max(0, (scaledHeight - parentRect.height) / 2);
 
-window.addEventListener('mousemove', (e) => {
-  if (!isPanning) return;
+    panX = clamp(panX, -maxX, maxX);
+    panY = clamp(panY, -maxY, maxY);
 
-  panX = e.clientX - startX;
-  panY = e.clientY - startY;
-  applyTransform();
-});
+    flipbookEl.style.transform = `translate(${panX}px, ${panY}px) scale(${zoom})`;
+  }
 
-window.addEventListener('mouseup', () => {
-  isPanning = false;
-  flipbookEl.classList.remove('panning');
-});
+  // Zoom
+  document.getElementById('zoomIn').onclick = () => {
+    zoom += 0.1;
+    applyTransform();
+  };
 
+  document.getElementById('zoomOut').onclick = () => {
+    zoom = Math.max(1, zoom - 0.1);
+
+    if (zoom === 1) {
+      panX = 0;
+      panY = 0;
+    }
+
+    applyTransform();
+  };
+
+  // Paneo (arrastrar)
+  flipbookEl.addEventListener('mousedown', (e) => {
+    if (zoom <= 1) return;
+
+    isPanning = true;
+    startX = e.clientX - panX;
+    startY = e.clientY - panY;
+    flipbookEl.classList.add('panning');
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!isPanning) return;
+
+    panX = e.clientX - startX;
+    panY = e.clientY - startY;
+    applyTransform();
+  });
+
+  window.addEventListener('mouseup', () => {
+    isPanning = false;
+    flipbookEl.classList.remove('panning');
+  });
+
+  // ===== Flipbook =====
   fb.turn({
     width: fb.width(),
     height: fb.height(),
@@ -284,29 +288,21 @@ window.addEventListener('mouseup', () => {
 
   fb.on('turned', (e, page) => {
     flipSound.currentTime = 0;
-    flipSound.play().catch(()=>{});
+    flipSound.play().catch(() => {});
     setActiveMonthByPage(page);
   });
-
-  document.getElementById('zoomIn').onclick = () => {
-    zoom += 0.1;
-    fb.css('transform', `scale(${zoom})`);
-  };
-
-  document.getElementById('zoomOut').onclick = () => {
-    zoom = Math.max(0.6, zoom - 0.1);
-    fb.css('transform', `scale(${zoom})`);
-  };
 
   const monthButtons = document.querySelectorAll('.months button');
 
   function setActiveMonthByPage(page) {
     monthButtons.forEach(b => b.classList.remove('active'));
     let active = monthButtons[0];
+
     monthButtons.forEach(btn => {
       const p = parseInt(btn.dataset.page, 10);
       if (page >= p) active = btn;
     });
+
     active.classList.add('active');
   }
 
