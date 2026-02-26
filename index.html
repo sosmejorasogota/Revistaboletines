@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Revista – Flipbook</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <style>
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      background: #111;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    .stage {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #flipbook {
+      width: 96vw;
+      height: 96vh;
+    }
+
+    #flipbook .page {
+      background: #fff;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+
+    #flipbook img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    /* Página fantasma: existe para Turn.js, no para el usuario */
+    #flipbook .ghost {
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .hint {
+      position: fixed;
+      bottom: 12px;
+      color: #bbb;
+      font-size: 12px;
+      opacity: .7;
+      z-index: 5;
+    }
+
+    .nav {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,.55);
+      color: #fff;
+      border: none;
+      font-size: 42px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 10;
+      display: grid;
+      place-items: center;
+      user-select: none;
+      transition: background .2s ease, transform .1s ease;
+    }
+    .nav:hover { background: rgba(0,0,0,.85); }
+    .nav:active { transform: translateY(-50%) scale(0.95); }
+    .nav.prev { left: 16px; }
+    .nav.next { right: 16px; }
+
+    @media (max-width: 640px) {
+      .nav { width: 44px; height: 44px; font-size: 34px; }
+    }
+  </style>
+
+  <!-- jQuery -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <!-- Turn.js local -->
+  <script src="libs/turn.min.js"></script>
+</head>
+<body>
+
+  <div class="stage">
+    <div id="flipbook">
+
+      <!-- Página fantasma -->
+      <div class="page ghost"></div>
+
+      <!-- Páginas reales -->
+      <div class="page"><img src="Imagenes/Boletin1.jpg" alt=""></div>
+      <div class="page"><img src="Imagenes/Boletin2.jpg" alt=""></div>
+      <div class="page"><img src="Imagenes/Boletin3.jpg" alt=""></div>
+      <div class="page"><img src="Imagenes/Boletin4.jpg" alt=""></div>
+      <!-- agrega más si quieres -->
+    </div>
+  </div>
+
+  <button class="nav prev">‹</button>
+  <button class="nav next">›</button>
+  <div class="hint">Arrastra la esquina de la página o usa ← →</div>
+
+  <audio id="flipSound" src="Audio/Sonido.mp3" preload="auto"></audio>
+
+  <script>
+    function initFlipbook() {
+      const el = document.getElementById('flipbook');
+
+      if (!window.jQuery || !jQuery().turn) {
+        console.error('Turn.js no cargó');
+        return;
+      }
+
+      const imgs = el.querySelectorAll('img');
+      let loaded = 0;
+
+      function start() {
+        const fb = $('#flipbook');
+
+        fb.turn({
+          width: el.clientWidth,
+          height: el.clientHeight,
+          autoCenter: true,
+          display: 'double',
+          gradients: true,
+          elevation: 50
+        });
+
+        // Fuerza iniciar en la doble página real (1–2)
+        fb.turn('page', 2);
+        // Bloquear navegación a la página fantasma (1)
+        fb.on('turning', function (e, page) {
+        if (page === 1) {
+          e.preventDefault();
+        fb.turn('page', 2);
+  }
+});
+
+        // Flechas
+        document.querySelector('.nav.prev').onclick = () => fb.turn('previous');
+        document.querySelector('.nav.next').onclick = () => fb.turn('next');
+
+        // Teclas
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowLeft') fb.turn('previous');
+          if (e.key === 'ArrowRight') fb.turn('next');
+        });
+
+        // Sonido
+        const flipSound = document.getElementById('flipSound');
+        flipSound.volume = 0.4;
+
+        fb.on('turned', function () {
+          try {
+            flipSound.currentTime = 0;
+            flipSound.play();
+          } catch(e) {}
+        });
+
+        // Resize
+        window.addEventListener('resize', () => {
+          fb.turn('size', el.clientWidth, el.clientHeight);
+        });
+      }
+
+      if (!imgs.length) return start();
+
+      imgs.forEach(img => {
+        if (img.complete) {
+          loaded++;
+          if (loaded === imgs.length) start();
+        } else {
+          img.onload = () => { loaded++; if (loaded === imgs.length) start(); };
+          img.onerror = () => { loaded++; if (loaded === imgs.length) start(); };
+        }
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', initFlipbook);
+  </script>
+
+</body>
+</html>
+
