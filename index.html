@@ -26,10 +26,8 @@ html, body {
 }
 
 #flipbook {
-  width: 96vw;
-  height: 96vh;
-  transform-origin: center center;
-  transition: transform .15s ease;
+  width: 98vw;
+  height: 98vh;
 }
 
 #flipbook .page {
@@ -43,15 +41,6 @@ html, body {
   object-fit: contain;
   user-select: none;
   -webkit-user-drag: none;
-}
-
-.hint {
-  position: fixed;
-  bottom: 12px;
-  color: #bbb;
-  font: 12px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  opacity: .8;
-  z-index: 5;
 }
 
 .nav {
@@ -69,65 +58,59 @@ html, body {
   z-index: 10;
   display: grid;
   place-items: center;
-  user-select: none;
-  transition: background .2s ease, transform .1s ease, opacity .2s ease;
 }
-.nav:hover { background: rgba(0,0,0,.85); }
-.nav:active { transform: translateY(-50%) scale(0.95); }
+
 .nav.prev { left: 16px; }
 .nav.next { right: 16px; }
-.nav.disabled { opacity: .25; pointer-events: none; }
-
-/* ZOOM arriba centrado */
-.zoom-controls {
-  position: fixed;
-  top: 14px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 10px;
-  z-index: 30;
-}
-
-.zoom-controls button {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(0,0,0,.65);
-  color: white;
-  font-size: 22px;
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-}
 
 .months {
   position: fixed;
-  bottom: 22px;
+  bottom: 16px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(0,0,0,.65);
-  border-radius: 999px;
-  padding: 8px 10px;
+  background: rgba(0,0,0,.6);
+  padding: 10px 16px;
+  border-radius: 30px;
   display: flex;
   gap: 6px;
   z-index: 20;
 }
 
 .months button {
-  background: rgba(255,255,255,.15);
-  color: #fff;
+  background: #444;
+  color: #ddd;
   border: none;
-  border-radius: 999px;
   padding: 6px 12px;
+  border-radius: 16px;
   cursor: pointer;
   font-size: 13px;
 }
 
 .months button.active {
   background: #fff;
-  color: #111;
+  color: #000;
+}
+
+/* ZOOM */
+.zoom-controls {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  gap: 8px;
+}
+
+.zoom-controls button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,.7);
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
 }
 </style>
 
@@ -150,7 +133,7 @@ html, body {
   </div>
 </div>
 
-<button class="nav prev disabled">‹</button>
+<button class="nav prev">‹</button>
 <button class="nav next">›</button>
 
 <div class="zoom-controls">
@@ -158,89 +141,73 @@ html, body {
   <button id="zoomIn">+</button>
 </div>
 
-<div class="months" id="monthsMenu"></div>
-<div class="hint">Arrastra la esquina de la página o usa ← →</div>
+<div class="months">
+  <button data-page="1" class="active">Febrero</button>
+  <button data-page="5">Marzo</button>
+  <button data-page="9">Abril</button>
+  <button data-page="13">Mayo</button>
+  <button data-page="17">Junio</button>
+  <button data-page="21">Julio</button>
+  <button data-page="25">Agosto</button>
+  <button data-page="29">Septiembre</button>
+  <button data-page="33">Noviembre</button>
+</div>
 
 <audio id="flipSound" src="Audio/Sonido.mp3" preload="auto"></audio>
 
 <script>
-const flipbook = $('#flipbook');
-
-flipbook.turn({
-  width: flipbook[0].clientWidth,
-  height: flipbook[0].clientHeight,
-  display: 'double',
-  autoCenter: true,
-  gradients: true,
-  elevation: 50,
-  page: 2
-});
-
-// Flechas
-const btnPrev = document.querySelector('.nav.prev');
-const btnNext = document.querySelector('.nav.next');
-
-function updateArrows() {
-  const page = flipbook.turn('page');
-  btnPrev.classList.toggle('disabled', page <= 2);
-}
-
-btnNext.onclick = () => flipbook.turn('next');
-btnPrev.onclick = () => flipbook.turn('previous');
-
-flipbook.on('turned', function () {
-  updateArrows();
-  const snd = document.getElementById('flipSound');
-  snd.currentTime = 0;
-  snd.play().catch(()=>{});
-});
-
-// Zoom
 let zoom = 1;
-const ZOOM_MIN = 1;
-const ZOOM_MAX = 2.5;
-const STEP = 0.2;
 
-function applyZoom() {
-  document.getElementById('flipbook').style.transform = `scale(${zoom})`;
-}
-
-zoomIn.onclick = () => { zoom = Math.min(ZOOM_MAX, zoom + STEP); applyZoom(); };
-zoomOut.onclick = () => { zoom = Math.max(ZOOM_MIN, zoom - STEP); applyZoom(); };
-
-document.getElementById('flipbook').ondblclick = () => {
-  zoom = zoom === 1 ? 2 : 1;
-  applyZoom();
-};
-
-// Menú meses (sin octubre ni diciembre)
-const months = [
-  {name:'Febrero', page:2},
-  {name:'Marzo', page:6},
-  {name:'Abril', page:10},
-  {name:'Mayo', page:14},
-  {name:'Junio', page:18},
-  {name:'Julio', page:22},
-  {name:'Agosto', page:26},
-  {name:'Septiembre', page:30},
-  {name:'Noviembre', page:34},
-];
-
-const menu = document.getElementById('monthsMenu');
-months.forEach(m => {
-  const b = document.createElement('button');
-  b.textContent = m.name;
-  b.onclick = () => flipbook.turn('page', m.page);
-  menu.appendChild(b);
+$('#flipbook').turn({
+  width: $('#flipbook').width(),
+  height: $('#flipbook').height(),
+  autoCenter: true,
+  display: 'double',
+  elevation: 50,
+  page: 2   // 🔥 fuerza arranque en páginas 1 y 2 reales
 });
 
-// Resize
-window.onresize = () => {
-  flipbook.turn('size', flipbook[0].clientWidth, flipbook[0].clientHeight);
+const fb = $('#flipbook');
+const flipSound = document.getElementById('flipSound');
+flipSound.volume = 0.4;
+
+fb.on('turned', function(e, page){
+  flipSound.currentTime = 0;
+  flipSound.play();
+
+  if (page <= 2) {
+    document.querySelector('.nav.prev').style.opacity = 0.3;
+    document.querySelector('.nav.prev').style.pointerEvents = 'none';
+  } else {
+    document.querySelector('.nav.prev').style.opacity = 1;
+    document.querySelector('.nav.prev').style.pointerEvents = 'auto';
+  }
+
+  document.querySelectorAll('.months button').forEach(btn => {
+    btn.classList.toggle('active', parseInt(btn.dataset.page) === page);
+  });
+});
+
+document.querySelector('.nav.next').onclick = () => fb.turn('next');
+document.querySelector('.nav.prev').onclick = () => fb.turn('previous');
+
+document.querySelectorAll('.months button').forEach(btn => {
+  btn.onclick = () => fb.turn('page', parseInt(btn.dataset.page));
+});
+
+document.getElementById('zoomIn').onclick = () => {
+  zoom = Math.min(zoom + 0.1, 2);
+  $('#flipbook').css('transform', `scale(${zoom})`);
 };
 
-// Estado inicial
-updateArrows();
+document.getElementById('zoomOut').onclick = () => {
+  zoom = Math.max(zoom - 0.1, 0.6);
+  $('#flipbook').css('transform', `scale(${zoom})`);
+};
+
+window.addEventListener('resize', () => {
+  fb.turn('size', $('#flipbook').width(), $('#flipbook').height());
+});
 </script>
 
 </body>
