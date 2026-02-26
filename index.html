@@ -44,6 +44,13 @@
       -webkit-user-drag: none;
     }
 
+    /* Página fantasma (no visible) */
+    #flipbook .ghost {
+      background: transparent;
+      box-shadow: none;
+      pointer-events: none;
+    }
+
     .nav {
       position: fixed;
       top: 50%;
@@ -70,7 +77,6 @@
       pointer-events: none;
     }
 
-    /* Menú meses */
     .months-nav {
       position: fixed;
       bottom: 12px;
@@ -97,11 +103,6 @@
       transition: all .2s ease;
     }
 
-    .months-nav button:hover {
-      opacity: 1;
-      background: rgba(255,255,255,.25);
-    }
-
     .months-nav button.active {
       background: #fff;
       color: #111;
@@ -110,60 +111,55 @@
     }
   </style>
 
-  <!-- jQuery -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-  <!-- Turn.js -->
   <script src="libs/turn.min.js"></script>
 </head>
 <body>
 
 <div class="stage">
   <div id="flipbook">
+
+    <!-- Página fantasma (posición 1) -->
+    <div class="page ghost"></div>
+
     <!-- 36 páginas reales -->
     <div class="page"><img src="Imagenes/Boletin1.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin2.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin3.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin4.jpg"></div>
-
     <div class="page"><img src="Imagenes/Boletin5.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin6.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin7.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin8.jpg"></div>
-
     <div class="page"><img src="Imagenes/Boletin9.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin10.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin11.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin12.jpg"></div>
-
     <div class="page"><img src="Imagenes/Boletin13.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin14.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin15.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin16.jpg"></div>
-
     <div class="page"><img src="Imagenes/Boletin17.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin18.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin19.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin20.jpg"></div>
-
     <div class="page"><img src="Imagenes/Boletin21.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin22.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin23.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin24.jpg"></div>
-
     <div class="page"><img src="Imagenes/Boletin25.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin26.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin27.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin28.jpg"></div>
-
     <div class="page"><img src="Imagenes/Boletin29.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin30.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin31.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin32.jpg"></div>
-
     <div class="page"><img src="Imagenes/Boletin33.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin34.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin35.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin36.jpg"></div>
+
   </div>
 </div>
 
@@ -171,15 +167,15 @@
 <button class="nav next">›</button>
 
 <div class="months-nav">
-  <button data-page="1">Febrero</button>
-  <button data-page="5">Marzo</button>
-  <button data-page="9">Abril</button>
-  <button data-page="13">Mayo</button>
-  <button data-page="17">Junio</button>
-  <button data-page="21">Julio</button>
-  <button data-page="25">Agosto</button>
-  <button data-page="29">Septiembre</button>
-  <button data-page="33">Noviembre</button>
+  <button data-page="2">Febrero</button>
+  <button data-page="6">Marzo</button>
+  <button data-page="10">Abril</button>
+  <button data-page="14">Mayo</button>
+  <button data-page="18">Junio</button>
+  <button data-page="22">Julio</button>
+  <button data-page="26">Agosto</button>
+  <button data-page="30">Septiembre</button>
+  <button data-page="34">Noviembre</button>
 </div>
 
 <script>
@@ -203,11 +199,7 @@
     btnPrev.onclick = () => fb.turn('previous');
 
     document.querySelectorAll('.months-nav button').forEach(btn => {
-      btn.onclick = () => {
-        let p = parseInt(btn.dataset.page, 10);
-        if (p === 1) p = 2; // para que siempre muestre doble
-        fb.turn('page', p);
-      };
+      btn.onclick = () => fb.turn('page', parseInt(btn.dataset.page, 10));
     });
 
     fb.on('turned', function (e, page) {
