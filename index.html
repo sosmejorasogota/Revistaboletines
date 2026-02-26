@@ -85,6 +85,44 @@
     @media (max-width: 640px) {
       .nav { width: 44px; height: 44px; font-size: 34px; }
     }
+
+    .months-nav {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(0,0,0,.65);
+  backdrop-filter: blur(6px);
+  border-radius: 999px;
+  z-index: 20;
+}
+
+.months-nav button {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,.35);
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all .2s ease;
+  opacity: .85;
+}
+
+.months-nav button:hover {
+  background: rgba(255,255,255,.15);
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+.months-nav button.active {
+  background: #fff;
+  color: #000;
+  opacity: 1;
+}
   </style>
 
   <!-- jQuery -->
@@ -146,6 +184,8 @@
         if (page === 1) {
           e.preventDefault();
         fb.turn('page', 2);
+
+          
   }
 });
 
@@ -170,6 +210,22 @@
           } catch(e) {}
         });
 
+        // Navegación por meses
+document.querySelectorAll('.months-nav button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const page = parseInt(btn.dataset.page, 10);
+    fb.turn('page', page);
+  });
+});
+
+// Resaltar mes activo según página actual
+fb.on('turned', function (e, page) {
+  document.querySelectorAll('.months-nav button').forEach(btn => {
+    const p = parseInt(btn.dataset.page, 10);
+    btn.classList.toggle('active', page >= p && page < p + 4);
+  });
+});
+
         // Resize
         window.addEventListener('resize', () => {
           fb.turn('size', el.clientWidth, el.clientHeight);
@@ -191,7 +247,17 @@
 
     document.addEventListener('DOMContentLoaded', initFlipbook);
   </script>
-
+<div class="months-nav">
+  <button data-page="2">Febrero</button>
+  <button data-page="6">Marzo</button>
+  <button data-page="10">Abril</button>
+  <button data-page="14">Mayo</button>
+  <button data-page="18">Junio</button>
+  <button data-page="22">Julio</button>
+  <button data-page="26">Agosto</button>
+  <button data-page="30">Septiembre</button>
+  <button data-page="34">Noviembre</button>
+</div>
 </body>
 </html>
 
