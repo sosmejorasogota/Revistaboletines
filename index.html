@@ -59,9 +59,16 @@
       z-index: 10;
       display: grid;
       place-items: center;
+      opacity: .9;
     }
+
     .nav.prev { left: 16px; }
     .nav.next { right: 16px; }
+
+    .nav.disabled {
+      opacity: .25;
+      pointer-events: none;
+    }
 
     .months-nav {
       position: fixed;
@@ -86,6 +93,12 @@
       cursor: pointer;
       font-size: 13px;
       opacity: .75;
+      transition: all .2s ease;
+    }
+
+    .months-nav button:hover {
+      opacity: 1;
+      background: rgba(255,255,255,.25);
     }
 
     .months-nav button.active {
@@ -104,7 +117,6 @@
 <div class="stage">
   <div id="flipbook">
     <!-- 36 páginas -->
-    <!-- Usa exactamente esta estructura -->
     <div class="page"><img src="Imagenes/Boletin1.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin2.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin3.jpg"></div>
@@ -152,7 +164,7 @@
   </div>
 </div>
 
-<button class="nav prev">‹</button>
+<button class="nav prev disabled">‹</button>
 <button class="nav next">›</button>
 
 <div class="months-nav">
@@ -180,14 +192,28 @@ function initFlipbook() {
     elevation: 50
   });
 
-  document.querySelector('.nav.next').onclick = () => fb.turn('next');
-  document.querySelector('.nav.prev').onclick = () => fb.turn('previous');
+  const btnPrev = document.querySelector('.nav.prev');
+  const btnNext = document.querySelector('.nav.next');
+
+  btnNext.onclick = () => fb.turn('next');
+  btnPrev.onclick = () => fb.turn('previous');
 
   document.querySelectorAll('.months-nav button').forEach(btn => {
-    btn.onclick = () => fb.turn('page', parseInt(btn.dataset.page, 10));
+    btn.onclick = () => {
+      const page = parseInt(btn.dataset.page, 10);
+      fb.turn('page', page);
+    };
   });
 
   fb.on('turned', function(e, page) {
+    // Desactivar flecha izquierda en la primera doble página
+    if (page <= 2) {
+      btnPrev.classList.add('disabled');
+    } else {
+      btnPrev.classList.remove('disabled');
+    }
+
+    // Activar mes actual
     document.querySelectorAll('.months-nav button').forEach(btn => {
       const p = parseInt(btn.dataset.page, 10);
       btn.classList.toggle('active', page >= p && page < p + 4);
