@@ -1,138 +1,136 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Revista Boletines</title>
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/turn.js@4/turn.min.js"></script>
+  <meta charset="UTF-8" />
+  <title>Revista – Flipbook</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
   <style>
-    body {
+    html, body {
+      width: 100%;
+      height: 100%;
       margin: 0;
       background: #111;
       overflow: hidden;
-      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: system-ui, Arial;
     }
 
     .stage {
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
+      height: 100%;
       display: flex;
       justify-content: center;
       align-items: center;
-      position: relative;
     }
 
     #flipbook {
-      width: 1200px;
-      height: 750px;
+      width: 96vw;
+      height: 94vh;
     }
 
-    .page {
-      width: 600px;
-      height: 750px;
-      background: white;
+    #flipbook .page {
+      background: #fff;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
     }
 
-    .page img {
+    #flipbook img {
       width: 100%;
       height: 100%;
       object-fit: contain;
+      user-select: none;
+      -webkit-user-drag: none;
     }
 
     .nav {
-      position: absolute;
+      position: fixed;
       top: 50%;
       transform: translateY(-50%);
-      width: 48px;
-      height: 48px;
+      background: rgba(0,0,0,.6);
+      color: #fff;
+      border: none;
+      font-size: 48px;
+      width: 56px;
+      height: 56px;
       border-radius: 50%;
-      background: rgba(0,0,0,0.6);
-      color: white;
-      font-size: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       cursor: pointer;
-      user-select: none;
-      z-index: 10;
+      z-index: 20;
+      display: grid;
+      place-items: center;
     }
-
     .nav.prev { left: 20px; }
     .nav.next { right: 20px; }
 
     .months {
-      position: absolute;
-      bottom: 25px;
+      position: fixed;
+      bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(0,0,0,0.6);
-      padding: 10px 15px;
-      border-radius: 30px;
       display: flex;
-      gap: 8px;
-      z-index: 20;
+      gap: 6px;
+      background: rgba(0,0,0,.55);
+      padding: 8px 10px;
+      border-radius: 999px;
+      z-index: 30;
     }
 
     .months button {
       background: #555;
+      color: #fff;
       border: none;
-      color: white;
       padding: 6px 14px;
-      border-radius: 20px;
+      border-radius: 999px;
       cursor: pointer;
-      font-size: 13px;
-      opacity: 0.7;
-      transition: .2s;
+      opacity: .7;
     }
 
     .months button.active {
-      background: white;
-      color: black;
+      background: #fff;
+      color: #000;
       opacity: 1;
-      font-weight: bold;
+      font-weight: 600;
     }
 
-    .zoom-controls {
-      position: absolute;
-      top: 15px;
+    .zoom {
+      position: fixed;
+      top: 12px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
-      gap: 10px;
-      z-index: 20;
+      gap: 8px;
+      z-index: 40;
     }
 
-    .zoom-controls button {
-      width: 38px;
-      height: 38px;
+    .zoom button {
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       border: none;
-      background: rgba(0,0,0,0.7);
-      color: white;
-      font-size: 18px;
       cursor: pointer;
+      background: rgba(0,0,0,.7);
+      color: #fff;
+      font-size: 18px;
     }
   </style>
-</head>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <script src="libs/turn.min.js"></script>
+</head>
 <body>
 
+<div class="zoom">
+  <button id="zoomOut">−</button>
+  <button id="zoomIn">+</button>
+</div>
+
 <div class="stage">
-  <div class="zoom-controls">
-    <button id="zoomOut">−</button>
-    <button id="zoomIn">+</button>
-  </div>
-
-  <div class="nav prev">&#10094;</div>
-  <div class="nav next">&#10095;</div>
-
   <div id="flipbook">
-
     <!-- PÁGINA FANTASMA (NO TOCAR) -->
     <div class="page"></div>
 
-    <!-- PÁGINAS REALES -->
+    <!-- 36 páginas reales (NO ITERAR) -->
     <div class="page"><img src="Imagenes/Boletin1.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin2.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin3.jpg"></div>
@@ -170,85 +168,78 @@
     <div class="page"><img src="Imagenes/Boletin35.jpg"></div>
     <div class="page"><img src="Imagenes/Boletin36.jpg"></div>
   </div>
-
-  <div class="months">
-    <button data-page="2" class="active">Febrero</button>
-    <button data-page="6">Marzo</button>
-    <button data-page="10">Abril</button>
-    <button data-page="14">Mayo</button>
-    <button data-page="18">Junio</button>
-    <button data-page="22">Julio</button>
-    <button data-page="26">Agosto</button>
-    <button data-page="30">Septiembre</button>
-    <button data-page="34">Noviembre</button>
-  </div>
-
 </div>
 
-<audio id="flipSound" src="flip.mp3" preload="auto"></audio>
+<button class="nav prev">‹</button>
+<button class="nav next">›</button>
+
+<div class="months">
+  <button data-page="2" class="active">Febrero</button>
+  <button data-page="6">Marzo</button>
+  <button data-page="10">Abril</button>
+  <button data-page="14">Mayo</button>
+  <button data-page="18">Junio</button>
+  <button data-page="22">Julio</button>
+  <button data-page="26">Agosto</button>
+  <button data-page="30">Septiembre</button>
+  <button data-page="34">Noviembre</button>
+</div>
+
+<audio id="flipSound" src="Audio/Sonido.mp3" preload="auto"></audio>
 
 <script>
   const fb = $('#flipbook');
-  let scale = 1;
+  const flipSound = document.getElementById('flipSound');
+  let zoom = 1;
 
   fb.turn({
-    width: 1200,
-    height: 750,
+    width: fb.width(),
+    height: fb.height(),
     autoCenter: true,
     display: 'double',
-    gradients: true,
-    elevation: 50
+    page: 2
   });
 
-  fb.turn('page', 2);
-
-  document.querySelector('.nav.next').onclick = () => fb.turn('next');
-  document.querySelector('.nav.prev').onclick = () => fb.turn('previous');
-
-  const flipSound = document.getElementById('flipSound');
-  const monthButtons = document.querySelectorAll('.months button');
-
-  function setActiveMonthByPage(page) {
-    monthButtons.forEach(b => b.classList.remove('active'));
-    let activeBtn = monthButtons[0];
-    monthButtons.forEach(btn => {
-      if (page >= parseInt(btn.dataset.page)) activeBtn = btn;
-    });
-    activeBtn.classList.add('active');
-  }
-
-  monthButtons.forEach(btn => {
-    btn.onclick = () => {
-      const targetPage = parseInt(btn.dataset.page);
-      fb.turn('page', targetPage);
-      setActiveMonthByPage(targetPage);
-    };
+  $('.nav.next').on('click', () => fb.turn('next'));
+  $('.nav.prev').on('click', () => {
+    if (fb.turn('page') > 2) fb.turn('previous');
   });
 
-  fb.on('turned', function(e, page){
+  fb.on('turned', (e, page) => {
     flipSound.currentTime = 0;
-    flipSound.play();
-
-    if (page <= 2) {
-      document.querySelector('.nav.prev').style.pointerEvents = 'none';
-      document.querySelector('.nav.prev').style.opacity = .3;
-    } else {
-      document.querySelector('.nav.prev').style.pointerEvents = 'auto';
-      document.querySelector('.nav.prev').style.opacity = 1;
-    }
-
+    flipSound.play().catch(()=>{});
     setActiveMonthByPage(page);
   });
 
   document.getElementById('zoomIn').onclick = () => {
-    scale += 0.1;
-    fb.css('transform', `scale(${scale})`);
+    zoom += 0.1;
+    fb.css('transform', `scale(${zoom})`);
   };
 
   document.getElementById('zoomOut').onclick = () => {
-    scale = Math.max(0.6, scale - 0.1);
-    fb.css('transform', `scale(${scale})`);
+    zoom = Math.max(0.6, zoom - 0.1);
+    fb.css('transform', `scale(${zoom})`);
   };
+
+  const monthButtons = document.querySelectorAll('.months button');
+
+  function setActiveMonthByPage(page) {
+    monthButtons.forEach(b => b.classList.remove('active'));
+    let active = monthButtons[0];
+    monthButtons.forEach(btn => {
+      const p = parseInt(btn.dataset.page, 10);
+      if (page >= p) active = btn;
+    });
+    active.classList.add('active');
+  }
+
+  monthButtons.forEach(btn => {
+    btn.onclick = () => {
+      const p = parseInt(btn.dataset.page, 10);
+      fb.turn('page', p);
+      setActiveMonthByPage(p);
+    };
+  });
 </script>
 
 </body>
