@@ -203,11 +203,25 @@
   const fb = $('#flipbook');
   const flipSound = document.getElementById('flipSound');
   let zoom = 1;
-  let isPanning = false;
-let startX = 0;
-let startY = 0;
-let panX = 0;
-let panY = 0;
+  function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function applyTransform(pageEl) {
+  const rect = pageEl.getBoundingClientRect();
+  const parentRect = pageEl.parentElement.getBoundingClientRect();
+
+  const scaledWidth = rect.width * scale;
+  const scaledHeight = rect.height * scale;
+
+  const maxX = Math.max(0, (scaledWidth - parentRect.width) / 2);
+  const maxY = Math.max(0, (scaledHeight - parentRect.height) / 2);
+
+  panX = clamp(panX, -maxX, maxX);
+  panY = clamp(panY, -maxY, maxY);
+
+  applyTransform(pageEl);
+}
 
 const flipbookEl = document.getElementById('flipbook');
 
