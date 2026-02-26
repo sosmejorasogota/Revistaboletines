@@ -1,217 +1,241 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Revista – Flipbook</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8" />
+<title>Revista – Flipbook</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-  <style>
-    html, body {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      background: #111;
-      overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    }
+<style>
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  background: #111;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-    .stage {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
+.stage {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
-    #flipbook {
-      width: 94vw;
-      height: 94vh;
-    }
+#flipbook {
+  width: 96vw;
+  height: 96vh;
+  transform-origin: center center;
+}
 
-    #flipbook .page {
-      background: #fff;
-      box-shadow: 0 10px 30px rgba(0,0,0,.35);
-    }
+#flipbook .page {
+  background: #fff;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+}
 
-    #flipbook img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      user-select: none;
-      -webkit-user-drag: none;
-    }
+#flipbook img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
 
-    /* Página fantasma (no visible) */
-    #flipbook .ghost {
-      background: transparent;
-      box-shadow: none;
-      pointer-events: none;
-    }
+.hint {
+  position: fixed;
+  bottom: 12px;
+  color: #bbb;
+  font: 12px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  opacity: .8;
+  z-index: 5;
+}
 
-    .nav {
-      position: fixed;
-      top: 50%;
-      transform: translateY(-50%);
-      background: rgba(0,0,0,.6);
-      color: #fff;
-      border: none;
-      font-size: 40px;
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      cursor: pointer;
-      z-index: 10;
-      display: grid;
-      place-items: center;
-      opacity: .9;
-    }
+.nav {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,.55);
+  color: #fff;
+  border: none;
+  font-size: 48px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  user-select: none;
+  transition: background .2s ease, transform .1s ease, opacity .2s ease;
+}
 
-    .nav.prev { left: 16px; }
-    .nav.next { right: 16px; }
+.nav:hover { background: rgba(0,0,0,.85); }
+.nav:active { transform: translateY(-50%) scale(0.95); }
+.nav.prev { left: 16px; }
+.nav.next { right: 16px; }
+.nav.disabled { opacity: .25; pointer-events: none; }
 
-    .nav.disabled {
-      opacity: .25;
-      pointer-events: none;
-    }
+.zoom-controls {
+  position: fixed;
+  right: 20px;
+  bottom: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 30;
+}
 
-    .months-nav {
-      position: fixed;
-      bottom: 12px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 8px;
-      background: rgba(0,0,0,.55);
-      padding: 10px 14px;
-      border-radius: 999px;
-      z-index: 20;
-      backdrop-filter: blur(6px);
-    }
+.zoom-controls button {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,.6);
+  color: white;
+  font-size: 22px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
 
-    .months-nav button {
-      background: rgba(255,255,255,.15);
-      border: 0;
-      color: #fff;
-      padding: 6px 12px;
-      border-radius: 999px;
-      cursor: pointer;
-      font-size: 13px;
-      opacity: .75;
-      transition: all .2s ease;
-    }
+.months {
+  position: fixed;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,.65);
+  border-radius: 999px;
+  padding: 8px 10px;
+  display: flex;
+  gap: 6px;
+  z-index: 20;
+}
 
-    .months-nav button.active {
-      background: #fff;
-      color: #111;
-      opacity: 1;
-      font-weight: 600;
-    }
-  </style>
+.months button {
+  background: rgba(255,255,255,.15);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 13px;
+}
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-  <script src="libs/turn.min.js"></script>
+.months button.active {
+  background: #fff;
+  color: #111;
+}
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="libs/turn.min.js"></script>
 </head>
 <body>
 
 <div class="stage">
-  <div id="flipbook">
-
-    <!-- Página fantasma (posición 1) -->
-    <div class="page ghost"></div>
-
-    <!-- 36 páginas reales -->
-    <div class="page"><img src="Imagenes/Boletin1.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin2.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin3.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin4.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin5.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin6.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin7.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin8.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin9.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin10.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin11.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin12.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin13.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin14.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin15.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin16.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin17.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin18.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin19.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin20.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin21.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin22.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin23.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin24.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin25.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin26.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin27.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin28.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin29.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin30.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin31.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin32.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin33.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin34.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin35.jpg"></div>
-    <div class="page"><img src="Imagenes/Boletin36.jpg"></div>
-
-  </div>
+  <div id="flipbook"></div>
 </div>
 
 <button class="nav prev disabled">‹</button>
 <button class="nav next">›</button>
 
-<div class="months-nav">
-  <button data-page="2">Febrero</button>
-  <button data-page="6">Marzo</button>
-  <button data-page="10">Abril</button>
-  <button data-page="14">Mayo</button>
-  <button data-page="18">Junio</button>
-  <button data-page="22">Julio</button>
-  <button data-page="26">Agosto</button>
-  <button data-page="30">Septiembre</button>
-  <button data-page="34">Noviembre</button>
+<div class="zoom-controls">
+  <button id="zoomOut">−</button>
+  <button id="zoomIn">+</button>
 </div>
 
+<div class="months" id="monthsMenu"></div>
+<div class="hint">Arrastra la esquina de la página o usa ← →</div>
+
+<audio id="flipSound" src="Audio/Sonido.mp3" preload="auto"></audio>
+
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const fb = $('#flipbook');
+const totalPages = 36;
+const flipbook = $('#flipbook');
 
-    fb.turn({
-      width: fb.parent().width(),
-      height: fb.parent().height(),
-      display: 'double',
-      autoCenter: true,
-      gradients: true,
-      elevation: 50,
-      page: 2   // ← Arranca mostrando 1–2
-    });
+// Crear páginas
+for (let i = 1; i <= totalPages; i++) {
+  flipbook.append(`<div class="page"><img src="Imagenes/Boletin${i}.jpg"></div>`);
+}
 
-    const btnPrev = document.querySelector('.nav.prev');
-    const btnNext = document.querySelector('.nav.next');
+// Inicializar Turn.js
+flipbook.turn({
+  width: flipbook[0].clientWidth,
+  height: flipbook[0].clientHeight,
+  display: 'double',
+  autoCenter: true,
+  gradients: true,
+  elevation: 50
+});
 
-    btnNext.onclick = () => fb.turn('next');
-    btnPrev.onclick = () => fb.turn('previous');
+// Flechas
+const btnPrev = document.querySelector('.nav.prev');
+const btnNext = document.querySelector('.nav.next');
 
-    document.querySelectorAll('.months-nav button').forEach(btn => {
-      btn.onclick = () => fb.turn('page', parseInt(btn.dataset.page, 10));
-    });
+function updateArrows() {
+  const page = flipbook.turn('page');
+  btnPrev.classList.toggle('disabled', page === 1);
+}
 
-    fb.on('turned', function (e, page) {
-      if (page <= 2) btnPrev.classList.add('disabled');
-      else btnPrev.classList.remove('disabled');
+btnNext.onclick = () => flipbook.turn('next');
+btnPrev.onclick = () => flipbook.turn('previous');
 
-      document.querySelectorAll('.months-nav button').forEach(btn => {
-        const p = parseInt(btn.dataset.page, 10);
-        btn.classList.toggle('active', page >= p && page < p + 4);
-      });
-    });
-  });
+flipbook.on('turned', function() {
+  updateArrows();
+  const snd = document.getElementById('flipSound');
+  snd.currentTime = 0;
+  snd.play().catch(()=>{});
+});
+
+// Zoom
+let zoom = 1;
+const ZOOM_MIN = 1;
+const ZOOM_MAX = 2.5;
+const STEP = 0.2;
+
+function applyZoom() {
+  document.getElementById('flipbook').style.transform = `scale(${zoom})`;
+}
+
+zoomIn.onclick = () => { zoom = Math.min(ZOOM_MAX, zoom + STEP); applyZoom(); }
+zoomOut.onclick = () => { zoom = Math.max(ZOOM_MIN, zoom - STEP); applyZoom(); }
+
+document.getElementById('flipbook').ondblclick = () => {
+  zoom = zoom === 1 ? 2 : 1;
+  applyZoom();
+};
+
+// Menú meses
+const months = [
+  {name:'Febrero', page:1},
+  {name:'Marzo', page:5},
+  {name:'Abril', page:9},
+  {name:'Mayo', page:13},
+  {name:'Junio', page:17},
+  {name:'Julio', page:21},
+  {name:'Agosto', page:25},
+  {name:'Septiembre', page:29},
+  {name:'Noviembre', page:33},
+];
+
+const menu = document.getElementById('monthsMenu');
+months.forEach(m => {
+  const b = document.createElement('button');
+  b.textContent = m.name;
+  b.onclick = () => flipbook.turn('page', m.page);
+  menu.appendChild(b);
+});
+
+// Resize
+window.onresize = () => {
+  flipbook.turn('size', flipbook[0].clientWidth, flipbook[0].clientHeight);
+};
+
+// Estado inicial
+updateArrows();
 </script>
 
 </body>
